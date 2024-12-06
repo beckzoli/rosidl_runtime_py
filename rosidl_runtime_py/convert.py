@@ -187,7 +187,7 @@ def message_to_ordereddict(
         value = getattr(msg, field_name, None)
         value = _convert_value(
             value, field_type=field_type,
-            truncate_len=truncate_length, no_arr=no_arr, no_str=no_str)
+            truncate_length=truncate_length, no_arr=no_arr, no_str=no_str)
         d[field_name] = value
     return d
 
@@ -196,39 +196,39 @@ def _convert_value(
     value,
     *,
     field_type=None,
-    truncate_len=None,
+    truncate_length=None,
     no_arr=False,
     no_str=False
 ):
 
     if isinstance(value, bytes):
-        if truncate_len is not None and len(value) > truncate_len:
-            value = ''.join([chr(c) for c in value[:truncate_len]]) + '...'
+        if truncate_length is not None and len(value) > truncate_length:
+            value = ''.join([chr(c) for c in value[:truncate_length]]) + '...'
         else:
             value = ''.join([chr(c) for c in value])
     elif isinstance(value, str):
         if no_str is True:
             value = '<string length: <{0}>>'.format(len(value))
-        elif truncate_len is not None and len(value) > truncate_len:
-            value = value[:truncate_len] + '...'
-    elif isinstance(value, (array.array, numpy.ndarray)) and not no_arr and truncate_len is None:
+        elif truncate_length is not None and len(value) > truncate_length:
+            value = value[:truncate_length] + '...'
+    elif isinstance(value, (array.array, numpy.ndarray)) and not no_arr and truncate_length is None:
         value = value.tolist()
     elif isinstance(value, (list, tuple, array.array, numpy.ndarray)):
         # Since arrays and ndarrays can't contain mixed types convert to list
         typename = tuple if isinstance(value, tuple) else list
         if no_arr is True and field_type is not None:
             value = __abbreviate_array_info(value, field_type)
-        elif truncate_len is not None and len(value) > truncate_len:
+        elif truncate_length is not None and len(value) > truncate_length:
             # Truncate the sequence
-            value = value[:truncate_len]
+            value = value[:truncate_length]
             # Truncate every item in the sequence
             value = typename(
-                [_convert_value(v, truncate_len=truncate_len,
+                [_convert_value(v, truncate_length=truncate_length,
                                 no_arr=no_arr, no_str=no_str) for v in value] + ['...'])
         else:
             # Truncate every item in the list
             value = typename(
-                [_convert_value(v, truncate_len=truncate_len,
+                [_convert_value(v, truncate_length=truncate_length,
                                 no_arr=no_arr, no_str=no_str) for v in value])
     elif isinstance(value, dict) or isinstance(value, OrderedDict):
         # Convert each key and value in the mapping
@@ -236,14 +236,14 @@ def _convert_value(
         for k, v in value.items():
             # Don't truncate keys because that could result in key collisions and data loss
             new_value[_convert_value(k)] = _convert_value(
-                v, truncate_len=truncate_len, no_arr=no_arr, no_str=no_str)
+                v, truncate_length=truncate_length, no_arr=no_arr, no_str=no_str)
         value = new_value
     elif isinstance(value, numpy.number):
         value = value.item()
     elif not isinstance(value, (bool, float, int)):
         # Assuming value is a message since it is neither a collection nor a primitive type
         value = message_to_ordereddict(
-            value, truncate_length=truncate_len, no_arr=no_arr, no_str=no_str)
+            value, truncate_length=truncate_length, no_arr=no_arr, no_str=no_str)
     return value
 
 
